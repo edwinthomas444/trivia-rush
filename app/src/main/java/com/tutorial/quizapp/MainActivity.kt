@@ -10,6 +10,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.compose.rememberNavController
 import com.tutorial.quizapp.ui.theme.QuizAppTheme
 
 class MainActivity : ComponentActivity() {
@@ -24,8 +25,8 @@ class MainActivity : ComponentActivity() {
                 ) {
                     val name1: String = "Edwin Thomas"
                     val name2: String = "Saket Dawgotra"
-
-                    EntryScreen(name1 = name1, name2 = name2)
+                    val navController = rememberNavController()
+                    QuizApp(name1, name2, navController)
                 }
             }
         }

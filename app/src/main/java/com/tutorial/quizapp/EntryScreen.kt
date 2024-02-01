@@ -24,13 +24,15 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun EntryScreen(name1: String, name2: String){
+fun EntryScreen(score: Int, name1: String, name2: String, navigateToScoreScreen:(Int)->Unit){
     Box(modifier = Modifier.fillMaxSize()){
         Image(
             painter = painterResource(id = R.drawable.entry_theme),
@@ -58,18 +60,30 @@ fun EntryScreen(name1: String, name2: String){
             // add text
             Text(
                 text = "Welcome to $name1's & $name2's Game",
-                modifier = Modifier.width(150.dp),
-                fontWeight = FontWeight.Bold,
-                color = Color.White,
-                fontSize = 24.sp,
+                modifier = Modifier.width(200.dp),
+                style = TextStyle(
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White,
+                    fontSize = 24.sp,
+                    fontFamily = FontFamily.SansSerif
+                ),
                 textAlign = TextAlign.Center)
 
             Spacer(modifier = Modifier.height(16.dp))
             // add a button to go to next screen
             ElevatedButton(
-                onClick = { /*TODO*/ }
+                onClick = {
+                    // navigate to score screen
+                    navigateToScoreScreen(score)
+                }
                 ) {
-                Text(text = "OK")
+                Text(text = "OK",
+                    style = TextStyle(
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFFF44336),
+                        fontSize = 24.sp,
+                        fontFamily = FontFamily.SansSerif
+                    ))
             }
         }
     }
