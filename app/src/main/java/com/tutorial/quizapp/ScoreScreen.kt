@@ -57,7 +57,7 @@ fun ScoreScreen(
                 Text("Play New Game",
                     style = TextStyle(
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFFF44336),
+                        color = Color(0xFFE57373),
                         fontSize = 24.sp,
                         fontFamily = FontFamily.SansSerif
                     ))
@@ -71,7 +71,7 @@ fun ScoreScreen(
                     Text("Last Game Score",
                         style = TextStyle(
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFFF44336),
+                            color = Color(0xFFE57373),
                             fontSize = 24.sp,
                             fontFamily = FontFamily.SansSerif
                         ))
@@ -80,7 +80,7 @@ fun ScoreScreen(
                     Text("Score: $score pts",
                         style = TextStyle(
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFFF44336),
+                            color = Color(0xFFE57373),
                             fontSize = 24.sp,
                             fontFamily = FontFamily.SansSerif
                         ))
@@ -93,7 +93,7 @@ fun ScoreScreen(
                 Text("Back",
                     style = TextStyle(
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFFF44336),
+                        color = Color(0xFFE57373),
                         fontSize = 24.sp,
                         fontFamily = FontFamily.SansSerif
                     ))

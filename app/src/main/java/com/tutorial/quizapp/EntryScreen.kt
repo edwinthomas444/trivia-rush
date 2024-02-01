@@ -80,7 +80,7 @@ fun EntryScreen(score: Int, name1: String, name2: String, navigateToScoreScreen:
                 Text(text = "OK",
                     style = TextStyle(
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFFF44336),
+                        color = Color(0xFFE57373),
                         fontSize = 24.sp,
                         fontFamily = FontFamily.SansSerif
                     ))
