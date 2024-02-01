@@ -9,7 +9,11 @@ Mobile Commerce CSI 5175 course requirements (Assignment - 1).
 - User-friendly interface containing 3 screens (activities). 
 - Score-based game mode, which tracks high-score.
 - Each game consists of 4 random questions from multiple domains.
+- Responsive buttons with smooth animated transitions.
 
-## Screens
+## Screens Animation
 
+![App GIF](resources/app_working.gif)
+
+## Developer Docs
 **ToDO**
