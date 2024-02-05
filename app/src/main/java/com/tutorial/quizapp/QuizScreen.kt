@@ -1,5 +1,6 @@
 package com.tutorial.quizapp
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -28,6 +29,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -55,7 +57,8 @@ import kotlin.random.Random
 
 @Composable
 fun QuizScreen(navigateToSecondScreen:(Int)->Unit){
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = Modifier
+        .fillMaxSize()) {
 
         // apply background theme
         Image(
@@ -66,14 +69,25 @@ fun QuizScreen(navigateToSecondScreen:(Int)->Unit){
         )
 
         var questionIndex by remember { mutableIntStateOf(0) }
+        // maintain a derived variable that stores the question index for answer reviews
+        var questionIndexReview by remember { mutableStateOf(0) }
+
         var displayQuestion by remember { mutableStateOf(questions[0]) }
+        var displayQuestionReview by remember { mutableStateOf(questions[0]) }
+
+
         var score by remember { mutableStateOf(0) }
         // maintain a state for the selected answers
         // default selected options is 0
         var selectedOption by remember { mutableStateOf<List<Int>>(mutableListOf(0,0,0,0)) }
 
+        // a variable that stores whethe screen is in quiz mode or answer display mode
+        val quizMode by remember { derivedStateOf {
+            questionIndex < answers.size
+        }}
+
         // display below composable as long as question index within range
-        if (questionIndex < answers.size){
+        if (questionIndex < answers.size || questionIndexReview < answers.size){
             Column(
                 modifier = Modifier.fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -96,7 +110,8 @@ fun QuizScreen(navigateToSecondScreen:(Int)->Unit){
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text(text = "$displayQuestion",
+                        val dispText = if (quizMode) displayQuestion else displayQuestionReview
+                        Text(text = "$dispText",
                             textAlign = TextAlign.Center,
                             style = TextStyle(
                                 fontWeight = FontWeight.Bold,
@@ -107,8 +122,14 @@ fun QuizScreen(navigateToSecondScreen:(Int)->Unit){
                     }
                 }
                 // update question on question card
-                displayQuestion = questions[questionIndex]
+                if (quizMode){
+                    displayQuestion = questions[questionIndex]
+                }else{
+                    displayQuestionReview = questions[questionIndexReview]
+                }
+
                 // add second stackable surface for the options
+                val endIndex = if (quizMode) questionIndex else questionIndexReview
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -118,27 +139,45 @@ fun QuizScreen(navigateToSecondScreen:(Int)->Unit){
                 ) {
                     // number of stackable cards is equal to the
                     // number of remaining questions (total-current)
-                    for (zIndex in (0..<answers.size-questionIndex)){
-                        // the elevation is computed based on i
-                        val yOffset = answers.size-questionIndex-zIndex-1
-                        val elevation = zIndex*50.dp
-                        StackableCard(
-                            qIndex = questionIndex,
-                            yOffset = yOffset.toFloat(),
-                            onClick = { qIndex ->
-                                questionIndex = qIndex
-                            },
-                            onClickAnswer = { answer->
-                                // store the option
-                                val currentList = selectedOption.toMutableList()
-                                currentList[questionIndex] = answer
-                                selectedOption = currentList
-                            },
-                            elevate = elevation
-                        )
+                    // as questionIndex changes, the stacked effect is created
+
+                    for (zIndex in answers.indices){
+                        this@Column.AnimatedVisibility(visible = zIndex<answers.size-endIndex){
+                            // the elevation is computed based on i
+                            val yOffset = answers.size-endIndex-zIndex-1
+                            val elevation = zIndex*50.dp
+
+                            if (quizMode){
+                                StackableCard(
+                                    qIndex = questionIndex,
+                                    yOffset = yOffset.toFloat(),
+                                    onClick = { qIndex ->
+                                        questionIndex = qIndex
+                                        // update the review index so that
+                                        // it starts from 0 after quiz over
+                                        questionIndexReview = questionIndex - answers.size
+                                    },
+                                    onClickAnswer = { answer->
+                                        // store the option
+                                        val currentList = selectedOption.toMutableList()
+                                        currentList[questionIndex] = answer
+                                        selectedOption = currentList
+                                    },
+                                    elevate = elevation
+                                )
+                            }else{
+                                StackableCardAnswers(
+                                    qIndex = questionIndexReview,
+                                    yOffset = yOffset.toFloat(),
+                                    onClick = { qIndex ->
+                                        questionIndexReview = qIndex
+                                    },
+                                    elevate = elevation,
+                                    selectedOptions = selectedOption
+                                )
+                            }
+                        }
                     }
-                    // test the value of the options selected
-                    // Text("${selectedOption.joinToString(", ")}")
                 }
             }
         }
@@ -192,6 +231,16 @@ fun StackableCard(
             mutableStateOf<List<Color>>(mutableListOf(Color.Black, Color.Black, Color.Black))
         }
 
+        var buttonText by remember {
+            mutableStateOf( "Next" )
+        }
+        var buttonSize by remember {
+            mutableStateOf( 140.dp)
+        }
+
+
+
+
         // add a column layout for the options and the next button
         Column(modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Center,
@@ -238,6 +287,12 @@ fun StackableCard(
 
                         // current
                         changeColors(selectedOption-1, true)
+
+                        // update the button text and width here
+                        // variable to store whether the user is in the final question
+                        // edit button text based on whether final question or not
+                        buttonText = if (qIndex == questions.size - 1) "Review Answers" else "Next"
+                        buttonSize = if (qIndex == questions.size - 1) 280.dp else 140.dp
                     },
                     elevation = CardDefaults.cardElevation(
                         defaultElevation = 6.dp
@@ -275,8 +330,153 @@ fun StackableCard(
                 // update the question index
                 onClick(qIndex + 1)
             },modifier = Modifier
+                .size(width = buttonSize, height = 80.dp)
+                .padding(16.dp)
+                .animateContentSize(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFFE57373),
+                    contentColor = Color.White
+                )
+            ) {
+                // test text to reach to button click
+                // use "Next $selectedOption" instead
+                Text("$buttonText",
+                    style = TextStyle(
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White,
+                        fontSize = 20.sp,
+                        fontFamily = FontFamily.SansSerif
+                    )
+                )
+            }
+//            Text("${selectedCardBackgroundColor[0].toString()}")
+//            Text("${selectedCardTextColor.joinToString(" , ")}")
+        }
+    }
+}
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun StackableCardAnswers(
+    qIndex: Int,
+    selectedOptions: List<Int>,
+    yOffset: Float,
+    elevate: Dp,
+    onClick: (Int) -> Unit
+){
+    val cardHeight = 500.dp
+    val cardWidth = 350.dp
+    val cardSpacing = 16.dp
+
+
+    Surface(
+        modifier = Modifier
+            .offset(y = yOffset * cardSpacing)
+            .width(cardWidth)
+            .height(cardHeight)
+            .padding(16.dp),
+        shadowElevation = elevate,
+        shape = RoundedCornerShape(20.dp),
+        color = Color.White
+    ) {
+
+//        var selectedCardBackgroundColor by remember {
+//            mutableStateOf<List<Color>>(mutableListOf(Color.LightGray, Color.LightGray, Color.LightGray))
+//        }
+//
+//        var selectedCardTextColor by remember {
+//            mutableStateOf<List<Color>>(mutableListOf(Color.Black, Color.Black, Color.Black))
+//        }
+
+        var selectedCardBackgroundColor = mutableListOf(Color.LightGray, Color.LightGray, Color.LightGray)
+        var selectedCardTextColor = mutableListOf(Color.Black, Color.Black, Color.Black)
+        // set the background colours of the right and wrong answers based on previous selection
+        val correctIndex = answers[qIndex] - 1
+        val selectedIndex = selectedOptions[qIndex] - 1
+        val currBackList = selectedCardBackgroundColor.toMutableList()
+        val currTxtList = selectedCardTextColor.toMutableList()
+
+        currBackList[correctIndex] = Color(0xFF81C784)
+        currTxtList[correctIndex]  = Color.White
+
+        if (correctIndex != selectedIndex){
+            currBackList[selectedIndex] = Color(0xFFE57373)
+            currTxtList[selectedIndex]  = Color.White
+        }
+
+        selectedCardBackgroundColor = currBackList
+        selectedCardTextColor = currTxtList
+
+
+        // add a column layout for the options and the next button
+        Column(modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally){
+
+            // set up a column of 3 multiple choices
+            for (j in 0..2){
+                // select the display array
+                val displayChoiceList = when(j){
+                    0-> choicesA
+                    1-> choicesB
+                    2-> choicesC
+                    else -> choicesA
+                }
+                val option = when(j){
+                    0-> "A."
+                    1-> "B."
+                    2-> "C."
+                    else -> "none"
+                }
+                // Each individual option that the user can click on
+                Card(
+                    elevation = CardDefaults.cardElevation(
+                        defaultElevation = 6.dp
+                    ),
+                    modifier = Modifier
+                        .size(width = 275.dp, height = 70.dp)
+                        .align(Alignment.CenterHorizontally)
+                        .fillMaxSize()
+                        .padding(6.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = selectedCardBackgroundColor[j], //Card background color
+                        contentColor = selectedCardTextColor[j]  //Card content color,e.g.text
+                    )
+                ){
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ){
+                        Text("$option ${displayChoiceList[qIndex]}",
+                            style = TextStyle(
+                                fontSize = 22.sp,
+                                fontStyle = FontStyle.Italic
+                            ))
+                    }
+                }
+            }
+
+            // prompt showing user whether answer is correct or wrong
+            ElevatedCard(onClick = { /*TODO*/ })
+            {
+                if (correctIndex == selectedIndex){
+                    Text("Correct Answer !")
+                }else{
+                    Text("Wrong Answer")
+                }
+            }
+
+            // put button in column scope
+            // button for going to next screen
+            ElevatedButton(onClick = {
+                // update the question index
+                onClick(qIndex + 1)
+            },modifier = Modifier
                 .size(width = 140.dp, height = 80.dp)
-                .padding(16.dp),
+                .padding(16.dp)
+                .animateContentSize(),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFFE57373),
                     contentColor = Color.White
@@ -293,11 +493,9 @@ fun StackableCard(
                     )
                 )
             }
-//            Text("${selectedCardBackgroundColor[0].toString()}")
-//            Text("${selectedCardTextColor.joinToString(" , ")}")
+            Text("${selectedIndex} ${correctIndex}")
+//            Text("${selectedCardBackgroundColor.joinToString(" , ")}")
         }
     }
 
-
 }
-
