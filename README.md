@@ -13,7 +13,7 @@ Mobile Commerce CSI 5175 course requirements (Assignment - 1).
 
 ## Screens Animation
 
-![App GIF](resources/app_working.gif)
+![App GIF](resources/app_ui_mod_recording.gif)
 
 ## Developer Docs
 **ToDO**
