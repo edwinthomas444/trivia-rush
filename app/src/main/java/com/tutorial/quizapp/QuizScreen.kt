@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -95,115 +96,115 @@ fun QuizScreen(navigateToSecondScreen:(Int)->Unit){
 
         // display below composable as long as question index within range
         if (questionIndex < answers.size || questionIndexReview < answers.size){
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Box(
+                modifier = Modifier.fillMaxSize().padding(16.dp),
+                contentAlignment = Alignment.Center
+            ) {
 
-                // add first surface for the question card
-                ElevatedCard(
-                    elevation = CardDefaults.cardElevation(
-                        defaultElevation = 6.dp
-                    ),
-                    modifier = Modifier
-                        .size(width = 350.dp, height = 150.dp)
-                        .align(Alignment.CenterHorizontally)
-                        .fillMaxSize()
-                        .padding(14.dp)
-                ) {
-                    Column(
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(10.dp)){
+                    // add first surface for the question card
+                    ElevatedCard(
+                        elevation = CardDefaults.cardElevation(
+                            defaultElevation = 6.dp
+                        ),
                         modifier = Modifier
-                            .fillMaxSize(),
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally
+                            .size(width = 350.dp, height = 150.dp)
+                            .align(Alignment.CenterHorizontally)
+                            .fillMaxSize()
+                            .padding(14.dp)
                     ) {
-                        val dispText = if (quizMode) displayQuestion else displayQuestionReview
-                        Text(text = "$dispText",
-                            textAlign = TextAlign.Center,
-                            style = TextStyle(
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 24.sp,
-                                fontFamily = FontFamily.SansSerif
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize(),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            val dispText = if (quizMode) displayQuestion else displayQuestionReview
+                            Text(text = "$dispText",
+                                textAlign = TextAlign.Center,
+                                style = TextStyle(
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 24.sp,
+                                    fontFamily = FontFamily.SansSerif
+                                )
                             )
-                        )
+                        }
                     }
-                }
-                // update question on question card
-                if (quizMode){
-                    displayQuestion = questions[questionIndex]
-                }else{
-                    displayQuestionReview = questions[questionIndexReview]
-                }
+                    // update question on question card
+                    if (quizMode){
+                        displayQuestion = questions[questionIndex]
+                    }else{
+                        displayQuestionReview = questions[questionIndexReview]
+                    }
 
 
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .animateContentSize()
-                        .align(Alignment.CenterHorizontally),
-                    contentAlignment = Alignment.TopCenter
-                ) {
-                    // number of stackable cards is equal to the
-                    // number of remaining questions (total-current)
-                    // as questionIndex changes, the stacked effect is created
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .animateContentSize()
+                            .align(Alignment.CenterHorizontally),
+                        contentAlignment = Alignment.TopCenter
+                    ) {
+                        // number of stackable cards is equal to the
+                        // number of remaining questions (total-current)
+                        // as questionIndex changes, the stacked effect is created
 
-                    // in compose the element displayed last overlaps the current
-                    // we want the first question to be displayed on top
-                    // so render bottom up
-                    for (answerCardIndex in answers.indices.reversed()){
-                        this@Column.AnimatedVisibility(visible = answerCardIndex >= endIndex){
-                            // the elevation is computed based on i
-                            val yOffset = answerCardIndex + 1
-                            val elevation = (answers.size-yOffset)*50.dp
+                        // in compose the element displayed last overlaps the current
+                        // we want the first question to be displayed on top
+                        // so render bottom up
+                        for (answerCardIndex in answers.indices.reversed()){
+                            this@Column.AnimatedVisibility(visible = answerCardIndex >= endIndex){
+                                // the elevation is computed based on i
+                                val yOffset = answerCardIndex + 1
+                                val elevation = (answers.size-yOffset)*50.dp
 
-                            if (quizMode){
-                                StackableCard(
-                                    qIndex = answerCardIndex,
-                                    activeqIndex = questionIndex,
-                                    yOffset = yOffset.toFloat(),
-                                    onClick = { qIndex ->
-                                        questionIndex = qIndex
-                                        // update the review index so that
-                                        // it starts from 0 after quiz over
-                                        questionIndexReview = questionIndex - answers.size
-                                    },
-                                    onClickAnswer = { answer->
-                                        // store the option
-                                        val currentList = selectedOption.toMutableList()
-                                        currentList[questionIndex] = answer
-                                        selectedOption = currentList
+                                if (quizMode){
+                                    StackableCard(
+                                        qIndex = answerCardIndex,
+                                        activeqIndex = questionIndex,
+                                        yOffset = yOffset.toFloat(),
+                                        onClick = { qIndex ->
+                                            questionIndex = qIndex
+                                            // update the review index so that
+                                            // it starts from 0 after quiz over
+                                            questionIndexReview = questionIndex - answers.size
+                                        },
+                                        onClickAnswer = { answer->
+                                            // store the option
+                                            val currentList = selectedOption.toMutableList()
+                                            currentList[questionIndex] = answer
+                                            selectedOption = currentList
 
-                                        // also update score
-                                        score+= if (selectedOption[endIndex] == answers[endIndex]) 1 else 0
-                                    },
-                                    elevate = elevation
-                                )
+                                            // also update score
+                                            score+= if (selectedOption[endIndex] == answers[endIndex]) 1 else 0
+                                        },
+                                        elevate = elevation
+                                    )
 
-                            }else{
-                                StackableCardAnswers(
-                                    qIndex = answerCardIndex,
-                                    activeqIndex = questionIndexReview,
-                                    yOffset = yOffset.toFloat(),
-                                    onClick = { qIndex ->
-                                        questionIndexReview = qIndex
-                                    },
-                                    elevate = elevation,
-                                    selectedOptions = selectedOption,
-                                    score = score,
-                                )
+                                }else{
+                                    StackableCardAnswers(
+                                        qIndex = answerCardIndex,
+                                        activeqIndex = questionIndexReview,
+                                        yOffset = yOffset.toFloat(),
+                                        onClick = { qIndex ->
+                                            questionIndexReview = qIndex
+                                        },
+                                        elevate = elevation,
+                                        selectedOptions = selectedOption,
+                                        score = score,
+                                    )
+                                }
                             }
                         }
                     }
                 }
+
             }
         }
         else{
-//            // navigate to the start screen
-//            score = 0
-//            // calculate the score based on the user selected options for all questions
-//            for (k in answers.indices){
-//                score+= if (selectedOption[k] == answers[k]) 1 else 0
-//            }
             navigateToSecondScreen(score)
         }
     }
@@ -219,7 +220,7 @@ fun StackableCard(
     onClick: (Int) -> Unit,
     onClickAnswer: (Int) -> Unit
 ) {
-    val cardHeight = 500.dp  // 500.dp
+    val cardHeight = 550.dp  // 500.dp
     val cardWidth = 350.dp
     val cardSpacing = 16.dp
 
@@ -254,6 +255,9 @@ fun StackableCard(
         var buttonSize by remember {
             mutableStateOf(140.dp)
         }
+
+        // enable button only on selecting and option
+        var buttonEnabled by remember { mutableStateOf(false) }
 
         // add a column layout for the options and the next button
         Column(modifier = Modifier.fillMaxSize(),
@@ -307,6 +311,9 @@ fun StackableCard(
                         // edit button text based on whether final question or not
                         buttonText = if (qIndex == questions.size - 1) "Review Answers" else "Next"
                         buttonSize = if (qIndex == questions.size - 1) 280.dp else 140.dp
+
+                        // also enable next button
+                        buttonEnabled = true
                     },
                     elevation = CardDefaults.cardElevation(
                         defaultElevation = 6.dp
@@ -349,7 +356,8 @@ fun StackableCard(
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFFE57373),
                     contentColor = Color.White
-                )
+                ),
+                enabled = buttonEnabled
             ) {
                 // test text to reach to button click
                 // use "Next $selectedOption" instead
