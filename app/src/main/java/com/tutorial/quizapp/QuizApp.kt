@@ -7,7 +7,8 @@ import androidx.navigation.NavHostController
 
 
 
-
+// takes care of navigation in the app to all three screens
+// passing the score values between them
 @Composable
 fun QuizApp(name1: String, name2: String, navController: NavHostController){
 
