@@ -37,13 +37,16 @@ fun QuizApp(name1: String, name2: String, navController: NavHostController){
 
         composable(route = "thirdscreen"){
             // save the score from the third screen to pass to the second screen
-            QuizScreen{
+            // for each new game get random 4 indices
+            val indicesList = getRandomIndices(k=4,n=20)
+
+            QuizScreen({
                 // it is the score that is passed from the 2nd screen when it call
                 // this function
                 navController.currentBackStackEntry?.savedStateHandle?.set("score",it)
                 //navigate to score screen
                 navController.navigate("secondscreen")
-            }
+            }, randomIndices = indicesList)
         }
     }
 

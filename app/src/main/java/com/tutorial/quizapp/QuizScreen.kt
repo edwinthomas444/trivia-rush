@@ -59,7 +59,16 @@ import kotlin.random.Random
 
 
 @Composable
-fun QuizScreen(navigateToSecondScreen:(Int)->Unit){
+fun QuizScreen(navigateToSecondScreen:(Int)->Unit,
+               randomIndices: (List<Int>)){
+
+    // create arrays with random indics mapped correctly
+    val questions = randomIndices.map { questions[it] }
+    val choicesA = randomIndices.map { choicesA[it] }
+    val choicesB = randomIndices.map { choicesB[it] }
+    val choicesC = randomIndices.map { choicesC[it] }
+    val answers = randomIndices.map { answers[it] }
+
     Box(modifier = Modifier
         .fillMaxSize()) {
 
@@ -181,7 +190,11 @@ fun QuizScreen(navigateToSecondScreen:(Int)->Unit){
                                             // also update score
                                             score+= if (selectedOption[endIndex] == answers[endIndex]) 1 else 0
                                         },
-                                        elevate = elevation
+                                        elevate = elevation,
+                                        choicesA = choicesA,
+                                        choicesB = choicesB,
+                                        choicesC = choicesC,
+                                        answers = answers
                                     )
 
                                 }else{
@@ -195,6 +208,10 @@ fun QuizScreen(navigateToSecondScreen:(Int)->Unit){
                                         elevate = elevation,
                                         selectedOptions = selectedOption,
                                         score = score,
+                                        choicesA = choicesA,
+                                        choicesB = choicesB,
+                                        choicesC = choicesC,
+                                        answers = answers
                                     )
                                 }
                             }
@@ -218,7 +235,11 @@ fun StackableCard(
     yOffset: Float,
     elevate: Dp,
     onClick: (Int) -> Unit,
-    onClickAnswer: (Int) -> Unit
+    onClickAnswer: (Int) -> Unit,
+    choicesA: List<String>,
+    choicesB: List<String>,
+    choicesC: List<String>,
+    answers: List<Int>
 ) {
     val cardHeight = 550.dp  // 500.dp
     val cardWidth = 350.dp
@@ -309,8 +330,8 @@ fun StackableCard(
                         // update the button text and width here
                         // variable to store whether the user is in the final question
                         // edit button text based on whether final question or not
-                        buttonText = if (qIndex == questions.size - 1) "Review Answers" else "Next"
-                        buttonSize = if (qIndex == questions.size - 1) 280.dp else 140.dp
+                        buttonText = if (qIndex == answers.size - 1) "Review Answers" else "Next"
+                        buttonSize = if (qIndex == answers.size - 1) 280.dp else 140.dp
 
                         // also enable next button
                         buttonEnabled = true
@@ -385,7 +406,11 @@ fun StackableCardAnswers(
     yOffset: Float,
     elevate: Dp,
     score: Int,
-    onClick: (Int) -> Unit
+    onClick: (Int) -> Unit,
+    choicesA: List<String>,
+    choicesB: List<String>,
+    choicesC: List<String>,
+    answers: List<Int>
 ){
     val cardHeight = 500.dp
     val cardWidth = 350.dp
